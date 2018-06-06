@@ -1,2 +1,13 @@
 
 *.pdb
+*.obj
+*.log
+*.pch
+*.tlog
+*.ipch
+*.idb
+*.opensdf
+*.sdf
+*.ilk
+*.exe
+*.res

@@ -11,7 +11,6 @@ AnalysisLogModule::AnalysisLogModule()
 	uSourceSize = 0;
 }
 
-
 BOOL AnalysisLogModule::Init(TCHAR* szFilePath, CHAR* szWantKey)
 {
 	this->szWantKey = szWantKey;
