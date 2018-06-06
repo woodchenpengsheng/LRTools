@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetKeyWorld", "GetKeyWorld\GetKeyWorld.vcxproj", "{C748612B-B047-4428-BE49-2B3E013D07A1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PE_INFO", "PE_INFO\PE_INFO.vcxproj", "{74BBF61A-64A5-4FF9-BD4A-16775BC5612F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C748612B-B047-4428-BE49-2B3E013D07A1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C748612B-B047-4428-BE49-2B3E013D07A1}.Debug|Win32.Build.0 = Debug|Win32
+		{C748612B-B047-4428-BE49-2B3E013D07A1}.Release|Win32.ActiveCfg = Release|Win32
+		{C748612B-B047-4428-BE49-2B3E013D07A1}.Release|Win32.Build.0 = Release|Win32
+		{74BBF61A-64A5-4FF9-BD4A-16775BC5612F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{74BBF61A-64A5-4FF9-BD4A-16775BC5612F}.Debug|Win32.Build.0 = Debug|Win32
+		{74BBF61A-64A5-4FF9-BD4A-16775BC5612F}.Release|Win32.ActiveCfg = Release|Win32
+		{74BBF61A-64A5-4FF9-BD4A-16775BC5612F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
