@@ -28,4 +28,11 @@
 #include "Commdlg.h"
 #include "GetKeyWorld.h"
 
+#define WM_MY_MESSAGE (WM_USER+100)
+
+enum
+{
+	DLG_INIT_INFO,
+};
+
 // TODO:  在此处引用程序需要的其他头文件

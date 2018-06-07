@@ -81,6 +81,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnalysisBehaviorLine.h" />
     <ClInclude Include="AnalysisLog.h" />
     <ClInclude Include="BasicUtil.h" />
     <ClInclude Include="GetKeyWorld.h" />
@@ -96,6 +97,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnalysisBehaviorLine.cpp" />
     <ClCompile Include="AnalysisLog.cpp" />
     <ClCompile Include="BasicUtil.cpp" />
     <ClCompile Include="GetKeyWorld.cpp" />

@@ -12,10 +12,32 @@ typedef struct _StartLogOp
 	int keyNumber;
 }StartLogOp;
 
-typedef struct _OpenFileList
+class OpenFileList
 {
+public:
 	HWND hWindowHandle;
-}OpenFileList;
+	char* strFilePath;
+
+	OpenFileList()
+	{
+		strFilePath = NULL;
+	}
+
+	OpenFileList(const OpenFileList& src)
+	{
+		hWindowHandle = src.hWindowHandle;
+		strFilePath = NULL;
+	}
+
+	~OpenFileList()
+	{
+		if (NULL != strFilePath)
+		{
+			strFilePath = NULL;
+		}
+	}
+
+};
 
 DWORD WINAPI HandleStartLogOpThreadProc(LPVOID lpParam);
 

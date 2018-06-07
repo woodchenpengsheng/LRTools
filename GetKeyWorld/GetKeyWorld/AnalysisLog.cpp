@@ -1,19 +1,33 @@
 #include "stdafx.h"
 
+#pragma region AnalysisBasic模块
 
-
-AnalysisLogModule::AnalysisLogModule()
+AnalysisLogBasic::AnalysisLogBasic()
 {
 	hSourceFile = INVALID_HANDLE_VALUE;
 	hSourceFileMap = INVALID_HANDLE_VALUE;
 	lpSourceMemory = NULL;
-	OutPut = NULL;
 	uSourceSize = 0;
+	m_LineOp = NULL;
+	ZeroMemory(szWantKey, MAX_PATH);
 }
 
-BOOL AnalysisLogModule::Init(TCHAR* szFilePath, CHAR* szWantKey)
+void AnalysisLogBasic::SetWantKey(char* strKey)
 {
-	this->szWantKey = szWantKey;
+	if (NULL == strKey)
+		return;
+	
+	int nLength = strlen(strKey);
+	if (nLength >= MAX_PATH - 1)
+	{
+		return;
+	}
+	memcpy(szWantKey, strKey, nLength);
+	szWantKey[nLength] = '\0';
+}
+
+BOOL AnalysisLogBasic::Init(TCHAR* szFilePath)
+{
 	if (!this->Clear())
 	{
 		return FALSE;
@@ -48,7 +62,7 @@ BOOL AnalysisLogModule::Init(TCHAR* szFilePath, CHAR* szWantKey)
 	return TRUE;
 }
 
-BOOL AnalysisLogModule::Clear()
+BOOL AnalysisLogBasic::Clear()
 {
 	if (NULL != lpSourceMemory)
 	{
@@ -68,87 +82,17 @@ BOOL AnalysisLogModule::Clear()
 		hSourceFile = INVALID_HANDLE_VALUE;
 	}
 
-	if (NULL != OutPut)
-	{
-		OutPut->Clear();
-	}
-
-	OutPut = NULL;
 	uSourceSize = 0;
-
+	m_LineOp = NULL;
 	return TRUE;
 }
 
-void AnalysisLogModule::SetAlreadyInList(TStringPod<char, int>* podList)
+AnalysisLogBasic::~AnalysisLogBasic()
 {
-	podAlreadyInList = podList;
+	AnalysisLogBasic::Clear();
 }
 
-void AnalysisLogModule::AnalysisTest()
-{
-	char testData[] = "[2018-05-28 20:30:31] [SceneBaseModule::LoadSceneInfo:1029][ERROR]:scene id error.\n\
-		[2018 - 05 - 28 20:30 : 32] store_1_0 connector_id 6 address 127.0.0.1:59013 accept, total 4\
-		[2018 - 05 - 28 20:30 : 32] member_1_0 connector_id 0 address 127.0.0.1 : 58963 comm_id 4 connected, total \
-		[2018 - 05 - 28 20:30 : 32] cache_1 connector_id 1 address 127.0.0.1 : 59015 accept, total 2\
-		[2018-05-28 20:31:03] [TeamModule::OnCustomGetTeamListInfo:2710][ERROR]:OnCustomGetTeamListInfo fail, get team main rec fail!\n\
-		[2018 - 05 - 28 20:31 : 03][Domain_Channel::LeaveChannelByType:376][INFO]:Player already in channel.\
-		[2018 - 05 - 28 20:31 : 03][Domain_Channel::LeaveChannelByType:377][INFO] : EE074C0993BE431E8DDEA8868F58CDF8\
-		[2018 - 05 - 28 20:31 : 03][Domain_Channel::LeaveChannelByType:378][INFO] : 3\
-		";
-	int length = strlen(testData);
-	lpSourceMemory = testData;
-
-	char* startP = (char*)lpSourceMemory;
-	char* endP = (char*)lpSourceMemory + length - 1;
-	if (NULL == startP)
-	{
-		return;
-	}
-
-	const char* wantKey = "[ERROR]";
-	int wantKeyLength = strlen(wantKey);
-
-	while (startP < endP)
-	{
-		char* targetResult = strstr(startP, wantKey);
-		if (NULL == targetResult)
-		{
-			return;
-		}
-
-		char* nextStart = targetResult + wantKeyLength;
-		char* nextLine = strstr(nextStart, "\n");
-
-		if (NULL == nextLine)
-		{
-			return;
-		}
-
-		int infoLength = nextLine - nextStart;
-		char* buff = new char[infoLength + 2];
-		ZeroMemory(buff, (infoLength + 2) * sizeof(char));
-
-		strncpy(buff, nextStart, infoLength);
-		buff[infoLength] = '\n';
-
-		if (NULL != podAlreadyInList)
-		{
-			if (podAlreadyInList->Find(buff) == podAlreadyInList->End())
-			{
-				MyDebugOutPut(buff);
-				//这个是深拷贝
-				podAlreadyInList->Add(buff, true);
-			}
-		}
-
-		delete buff;
-		
-		startP = nextLine + 1;
-	}
-	
-}
-
-BOOL AnalysisLogModule::AnalysisStart()
+BOOL AnalysisLogBasic::AnalysisStart()
 {
 	if (NULL == lpSourceMemory)
 	{
@@ -177,7 +121,6 @@ BOOL AnalysisLogModule::AnalysisStart()
 
 		char* nextStart = NULL;
 
-		//char* thisLineStartFlag = strrstr2(targetResult, (char*)lpSourceMemory, "\n");
 		char* thisLineStartFlag = strrstr2(targetResult - 1, (char*)lpSourceMemory, "[");
 
 		if (NULL == thisLineStartFlag)
@@ -188,7 +131,6 @@ BOOL AnalysisLogModule::AnalysisStart()
 
 		nextStart = thisLineStartFlag;
 
-		//char* nextStart = targetResult + wantKeyLength;
 		char* nextLine = strstr(nextStart, "\n");
 
 		if (NULL == nextLine)
@@ -203,37 +145,9 @@ BOOL AnalysisLogModule::AnalysisStart()
 		strncpy(buff, nextStart, infoLength);
 		buff[infoLength] = '\n';
 
-		//[2018 - 05 - 28 13:49 : 35][SkillModule::GetMaxSkillRange:203][ERROR]:0，进行比较的时候需要将事件给剔除
-		
-
-		if (NULL != podAlreadyInList)
+		if (m_LineOp)
 		{
-			if (podAlreadyInList->Find(buff) == podAlreadyInList->End())
-			{
-				if (this->OutPut)
-				{
-					//由于需要增加次数，这里不在直接写了
-					//this->OutPut->Write(buff, infoLength);
-				}
-				else
-				{
-					MyDebugOutPut(buff);
-				}
-				//这个是深拷贝
-				podAlreadyInList->Add(buff, 1);
-			}
-			else
-			{
-				int currNumber = 0;
-				podAlreadyInList->GetData(buff, currNumber);
-				//if (strstr(buff, "[EquipmentModule::CanEquip:215][ERROR]"))
-				//{
-				//	int a = 0; 
-				//	a++;
-				//}
-				currNumber = currNumber + 1;
-				podAlreadyInList->Set(buff, currNumber);
-			}
+			m_LineOp->OpLine(buff);
 		}
 
 		delete buff;
@@ -243,8 +157,50 @@ BOOL AnalysisLogModule::AnalysisStart()
 	return TRUE;
 }
 
-
-void AnalysisLogModule::SetMyFile(MyFile* outPut)
+void AnalysisLogBasic::SetLineOp(AnalysisBehaviorLine* op)
 {
-	this->OutPut = outPut;
+	this->m_LineOp = op;
 }
+
+AnalysisBehaviorLine* AnalysisLogBasic::GetLineOp()
+{
+	return this->m_LineOp;
+}
+
+#pragma endregion
+
+#pragma region 主界面输出模块
+
+AnalysisLogModule::~AnalysisLogModule()
+{
+	AnalysisLogModule::Clear();
+}
+
+AnalysisLogModule::AnalysisLogModule()
+{
+}
+
+
+BOOL AnalysisLogModule::Clear()
+{
+	return AnalysisLogBasic::Clear();
+}
+
+#pragma endregion
+
+
+AnalysisSingleFileModule::~AnalysisSingleFileModule()
+{
+	this->Clear();
+}
+
+AnalysisSingleFileModule::AnalysisSingleFileModule()
+{
+
+}
+
+BOOL AnalysisSingleFileModule::Clear()
+{
+	return AnalysisLogBasic::Clear();
+}
+

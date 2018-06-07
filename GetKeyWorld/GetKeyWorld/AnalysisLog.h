@@ -2,29 +2,44 @@
 #define _ANALYSIS_H_
 #include "StringPod.h"
 #include "MyFile.h"
+#include "AnalysisBehaviorLine.h"
 
-class AnalysisLogModule
+class AnalysisLogBasic
 {
-private:
+protected:
+	char szWantKey[MAX_PATH];
+	AnalysisBehaviorLine* m_LineOp;
 	HANDLE hSourceFile;
 	HANDLE hSourceFileMap;
 	LPVOID lpSourceMemory;
 	DWORD uSourceSize;
 
-	TStringPod<char, int>* podAlreadyInList;
-
-	//const char* wantKey = "[ERROR]";
-	//int wantKeyLength = strlen(wantKey);
-	char* szWantKey;
-
 public:
-	MyFile* OutPut;
+	virtual ~AnalysisLogBasic();
+	AnalysisLogBasic();
+	virtual BOOL Init(TCHAR* szFilePath);
+	virtual BOOL Clear();
+	virtual BOOL AnalysisStart();
+	void SetLineOp(AnalysisBehaviorLine* op);
+	AnalysisBehaviorLine* GetLineOp();
+	virtual void SetWantKey(char* strKey);
+};
+
+
+class AnalysisLogModule : public AnalysisLogBasic
+{
+public:
+	~AnalysisLogModule();
 	AnalysisLogModule();
-	BOOL Init(TCHAR* szFilePath, CHAR* szWantKey);
 	BOOL Clear();
-	BOOL AnalysisStart();
 	void AnalysisTest();
-	void SetAlreadyInList(TStringPod<char, int>*);
-	void SetMyFile(MyFile* outPut);
+};
+
+class AnalysisSingleFileModule : public AnalysisLogBasic
+{
+public:
+	~AnalysisSingleFileModule();
+	AnalysisSingleFileModule();
+	virtual BOOL Clear();
 };
 #endif

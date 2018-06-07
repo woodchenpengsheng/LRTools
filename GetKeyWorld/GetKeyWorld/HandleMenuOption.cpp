@@ -146,13 +146,19 @@ LRESULT HandleStartLogOp(HWND hWnd, int ItemId)
 	ZeroMemory(keyName, MAX_PATH);
 	GetDlgItemText(hWnd, ItemId, keyName, MAX_PATH - 1);
 	//根据keyName，和上面的文件信息，进行ERROR输出。
+
+	TStringPod<char, int> podAlreadyInList;
+	podAlreadyInList.Clear();
+
+	AnalysisBehaviorLine_Func01* behavior = new AnalysisBehaviorLine_Func01();
+	behavior->podAlreadyInList = &podAlreadyInList;
+
 	AnalysisLogModule* analysisModule = new AnalysisLogModule();
+	analysisModule->SetLineOp(behavior);
+
 	
 	FILE_NAME_ID_MAP_CONST_ITERATOR const_iter = stNameIDMap.begin();
 
-	TStringPod<char, int> podAlreadyInList;
-
-	podAlreadyInList.Clear();
 
 	MyFile outPutLog;
 	if (!outPutLog.Init(szOutPutPathName))
@@ -165,10 +171,8 @@ LRESULT HandleStartLogOp(HWND hWnd, int ItemId)
 	for (; const_iter != stNameIDMap.end(); const_iter++)
 	{
 		TCHAR* name = const_iter->first;
-		analysisModule->Init(name, keyName);
-		analysisModule->SetAlreadyInList(&podAlreadyInList);
-		//analysisModule->SetMyFile(&outPutLog);
-		analysisModule->SetMyFile(NULL);
+		analysisModule->Init(name);
+		analysisModule->SetWantKey(keyName);
 		analysisModule->AnalysisStart();
 		analysisModule->Clear();
 	}
@@ -192,6 +196,8 @@ LRESULT HandleStartLogOp(HWND hWnd, int ItemId)
 	podAlreadyInList.Clear();
 	HandleStartLogOpThreadHandle = INVALID_HANDLE_VALUE;
 	MessageBox(NULL, TEXT("Finish"),TEXT("提取完成"), MB_OK);
+	delete analysisModule;
+	delete behavior;
 	
 	return 1;
 }
@@ -263,14 +269,15 @@ LRESULT HandleDoubleClickListView(HWND hWnd,LPNMITEMACTIVATE lpInfo)
 
 	HWND openDialog = CreateDialog(NULL, MAKEINTRESOURCE(IDD_SINGLEFILE), hWnd, (DLGPROC)SingleDlgProc);
 
-	OpenFileList stFileData;
-	stFileData.hWindowHandle = openDialog;
+	OpenFileList* pStFileData = new OpenFileList();
+	pStFileData->hWindowHandle = openDialog;
+	pStFileData->strFilePath = resultBuffer;
 
-	strPodAllOpenList.Add(resultBuffer, stFileData);
-
+	strPodAllOpenList.Add(resultBuffer, *pStFileData);
 	ShowWindow(openDialog, SW_SHOW);
 
-	delete resultBuffer;
+
+	PostMessage(openDialog, WM_MY_MESSAGE, DLG_INIT_INFO, (LPARAM)pStFileData);
 
 
 	//SingleFileUIThreadInfo* pData = new SingleFileUIThreadInfo;
