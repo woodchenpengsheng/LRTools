@@ -1,7 +1,25 @@
+#ifndef SINGLE_FILE_ERROR_SHOW_H_
+#define SINGLE_FILE_ERROR_SHOW_H_
+
 #include "windows.h"
 #include "HandleMenuOption.h"
 #include "ArrayPod.h"
 #include "StringPod.h"
+#include "AnalysisLog.h"
+
+class ShowKeyInfoCell
+{
+public:
+	char* fileStartPointer;
+	int fileStartPos;
+
+	ShowKeyInfoCell()
+	{
+		fileStartPointer = NULL;
+		fileStartPos = 0;
+	}
+
+};
 
 class ShowKeyInfo
 {
@@ -14,7 +32,6 @@ public:
 
 	int nShowTime;
 	TArrayPod<ShowKeyInfoCell*, 1>* pArrayPod;
-
 };
 
 
@@ -31,28 +48,19 @@ typedef struct _SingleFileUIThreadInfo
 	HWND hParent;
 }SingleFileUIThreadInfo;
 
-class ShowKeyInfoCell
-{
-public:
-	char* fileStartPointer;
-	int fileStartPos;
+class AnalysisLogModule;
+class AnalysisBehaviorLine;
 
-	ShowKeyInfoCell()
-	{
-		fileStartPointer = NULL;
-		fileStartPos = 0;
-	}
-
-};
-
-
+#define ShowOutDefaultLength MAX_PATH * 10
 class SingleViewContainer
 {
 public:
-	TStringPod<char, ShowKeyInfo*> m_PodAlreadyInList;
 	AnalysisLogModule* m_AnalysisModule;
 	AnalysisBehaviorLine* m_BehaviorModule;
 	STSingleFileThreadOp m_ThreadOpInfo;
+	TStringPod<char, ShowKeyInfo*> m_PodAlreadyInList;
+	TStringPod<char, OpenFileList> strPodAllOpenList;
+	OpenFileList* m_CurrentFileList;
 
 	HWND hMainDlg;
 	HWND hRightDlg;
@@ -63,6 +71,7 @@ public:
 };
 
 extern MyListView* g_pSingleErrorFileLeftView;
+
 extern SingleViewContainer* g_pSingleViewContainer;
 
 INT CALLBACK SingleDlgProc(HWND, UINT, WPARAM, LPARAM);
@@ -71,6 +80,8 @@ DWORD WINAPI SingleDlgThreadProc(LPVOID lpParam);
 
 void Handle_DLG_INIT_INFO(HWND hWnd, OpenFileList* pOpenFile);
 
+void Handle_RIGHT_DLG_INIT_INFO(OpenFileList* pOpenFile);
+
 void ReleaseViewRelatedInfo();
 
 DWORD WINAPI SingleFileAnalysisThreadOp (LPVOID lpParam);
@@ -78,3 +89,12 @@ DWORD WINAPI SingleFileAnalysisThreadOp (LPVOID lpParam);
 void InitSingleFileMainDlg(HWND hWnd);
 
 void InitSingleFileRightDlg(HWND hWnd);
+
+LRESULT HandleDoubleClickRightDlg(HWND hWnd, LPNMITEMACTIVATE lpInfo);
+
+//往右边的editbox里面丢数据，hWnd是
+void AppendInfoMation(HWND hRichEdit, char* szData);
+
+void ShowCertainIndexLog(HWND hWnd, int index = -1);
+
+#endif

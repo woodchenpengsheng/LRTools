@@ -23,6 +23,9 @@ public:
 	void SetLineOp(AnalysisBehaviorLine* op);
 	AnalysisBehaviorLine* GetLineOp();
 	virtual void SetWantKey(char* strKey);
+
+	DWORD GetSize();
+	LPVOID GetStartSourceMemory();
 };
 
 

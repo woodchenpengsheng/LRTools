@@ -2,6 +2,17 @@
 
 #pragma region AnalysisBasicÄ£¿é
 
+DWORD AnalysisLogBasic::GetSize()
+{
+	return uSourceSize;
+}
+
+LPVOID AnalysisLogBasic::GetStartSourceMemory()
+{
+	return lpSourceMemory;
+}
+
+
 AnalysisLogBasic::AnalysisLogBasic()
 {
 	hSourceFile = INVALID_HANDLE_VALUE;

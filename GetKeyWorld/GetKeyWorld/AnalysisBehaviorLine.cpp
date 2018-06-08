@@ -3,7 +3,7 @@
 
 void AnalysisBehaviorLine_Func01::OpLine(OpLinePassData sTData)
 {
-	CHAR* buff = st.buffer;
+	CHAR* buff = sTData.buffer;
 	if (NULL != podAlreadyInList)
 	{
 		if (podAlreadyInList->Find(buff) == podAlreadyInList->End())
