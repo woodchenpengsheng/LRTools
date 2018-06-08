@@ -28,6 +28,11 @@
 #include "Commdlg.h"
 #include "GetKeyWorld.h"
 
+
+#include "util_func.h"
+#include "FastStr.h"
+
+
 #define WM_MY_MESSAGE (WM_USER+100)
 
 enum

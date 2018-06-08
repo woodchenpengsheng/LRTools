@@ -5,6 +5,7 @@
 #include "SingleFileErrorShow.h"
 #include <map>
 #include "GetKeyWorld.h"
+#include "util_func.h"
 
 /************************************************************************/
 /* 对外仅输出一个函数HandleOpenFileOp                                                                     */
@@ -57,16 +58,17 @@ void OutPutMapData(const FILE_NAME_ID_MAP& szOutPutMap)
 void OutPutView(const FILE_NAME_ID_MAP& szOutPutMap)
 {
 	AddRowInfo stRowInfo;
-	ZeroMemory(&stRowInfo, sizeof(stRowInfo));
+	stRowInfo.clear();
 
 	FILE_NAME_ID_MAP_CONST_ITERATOR const_iter = szOutPutMap.begin();
 	for (; const_iter != szOutPutMap.end(); const_iter++)
 	{
-		TCHAR* name = const_iter->first;
+		CHAR* name = const_iter->first;
 		UINT number = const_iter->second;
-		stRowInfo.content = name;
-		stRowInfo.number = number;
+		stRowInfo.push_back(util_int_as_string(number).c_str());
+		stRowInfo.push_back(name);
 		g_pMainListView->AddLine(stRowInfo);
+		stRowInfo.clear();
 	}
 }
 
@@ -154,8 +156,6 @@ LRESULT HandleStartLogOp(HWND hWnd, int ItemId)
 	behavior->podAlreadyInList = &podAlreadyInList;
 
 	AnalysisLogModule* analysisModule = new AnalysisLogModule();
-	analysisModule->SetLineOp(behavior);
-
 	
 	FILE_NAME_ID_MAP_CONST_ITERATOR const_iter = stNameIDMap.begin();
 
@@ -172,6 +172,7 @@ LRESULT HandleStartLogOp(HWND hWnd, int ItemId)
 	{
 		TCHAR* name = const_iter->first;
 		analysisModule->Init(name);
+		analysisModule->SetLineOp(behavior);
 		analysisModule->SetWantKey(keyName);
 		analysisModule->AnalysisStart();
 		analysisModule->Clear();

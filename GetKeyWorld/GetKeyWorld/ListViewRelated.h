@@ -2,20 +2,18 @@
 #define _LIST_VIEW_RELATED_H_
 #include "Commctrl.h"
 #include "StringPod.h"
+#include "ArrayPod.h"
+#include "FastStr.h"
 
-typedef struct _AddRowInfo
-{
-	int number;
-	TCHAR* content;
-}AddRowInfo;
+typedef TArrayPod<fast_doubleString, 10> AddRowInfo;
+
 
 class MyListView
 {
 public:
-	typedef TStringPod<char, int>::iterator typeIter;
 	MyListView(char* colunmName[], HWND hModuleTable);
 	LRESULT ListViewAddColumn(int nColumn, int nWidth, const CHAR* lpszHead);
-	LRESULT ListViewSetItem(int nItem, int nSubItem, TCHAR* lpszText);
+	LRESULT ListViewSetItem(int nItem, int nSubItem, const TCHAR* lpszText);
 	void ListViewClear();
 	LRESULT GetListViewItem(DWORD dwLine, DWORD dwCol, CHAR* _lpszText, int nDefaultMaxBuff = MAX_PATH);
 	void ClearResultView();
@@ -26,7 +24,7 @@ public:
 	HWND GetModuleHWND();
 private:
 	HWND hWinParent;
-	TStringPod<char, int> columnName;
+	TArrayPod<fast_string, 10> columnName;
 	HWND hModuleTable;
 	DWORD dwCount;
 	LV_COLUMN stLVC;

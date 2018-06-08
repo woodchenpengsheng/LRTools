@@ -35,11 +35,11 @@ public:
 	void AnalysisTest();
 };
 
-class AnalysisSingleFileModule : public AnalysisLogBasic
-{
-public:
-	~AnalysisSingleFileModule();
-	AnalysisSingleFileModule();
-	virtual BOOL Clear();
-};
+//class AnalysisSingleFileModule : public AnalysisLogBasic
+//{
+//public:
+//	~AnalysisSingleFileModule();
+//	AnalysisSingleFileModule();
+//	virtual BOOL Clear();
+//};
 #endif

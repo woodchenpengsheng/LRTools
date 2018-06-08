@@ -5,9 +5,8 @@ MyListView::MyListView(char** strColumnName, HWND hModuleTable)
 	int columnIndex = 0;
 	while (*strColumnName != NULL)
 	{
-		columnName.Add(*strColumnName, columnIndex);
+		columnName.push_back(*strColumnName);
 		strColumnName++;
-		columnIndex++;
 	}
 	this->hModuleTable = hModuleTable;
 }
@@ -27,13 +26,13 @@ LRESULT MyListView::ListViewAddColumn(int nColumn, int nWidth, const CHAR* lpszH
 //在ListView中新增一行，或修改一行中某个字段的内容
 //输入：_dwItem = 要修改的行的编号
 //_dwSubItem = 要修改的字段的编号， - 1表示插入新的行， >= 1表示字段的编号
-LRESULT MyListView::ListViewSetItem(int nItem, int nSubItem, TCHAR* lpszText)
+LRESULT MyListView::ListViewSetItem(int nItem, int nSubItem, const TCHAR* lpszText)
 {
 	RtlZeroMemory(&stLVI, sizeof(LV_ITEM));
 	int length = lstrlen(lpszText);
 	stLVI.cchTextMax = length;
 	stLVI.mask = LVIF_TEXT;
-	stLVI.pszText = lpszText;
+	stLVI.pszText = (TCHAR*)lpszText;
 	stLVI.iItem = nItem;
 	stLVI.iSubItem = nSubItem;
 
@@ -85,29 +84,26 @@ void MyListView::ClearResultView()
 {
 	ListViewClear();
 
-	typeIter iter = columnName.Begin();
-	int i = 0;
-	while (iter != columnName.End())
+	for (size_t i = 0; i < columnName.size(); ++i)
 	{
-		const char* szColumnName = iter.GetKey();
-		int column = iter.GetData();
-		ListViewAddColumn(column, 200, szColumnName);
-		iter++;
+		const char* szColumnName = columnName[i].c_str();
+		ListViewAddColumn(i, 75 + 400 * i, szColumnName);
 	}
-
 }
 
 void MyListView::AddLine(AddRowInfo& stInfo)
 {
-	dwCount = ListViewSetItem(dwCount, -1, stInfo.content);
-	
-	int columnIndex = 0;
-	TCHAR numberBuffer[256];
-	ZeroMemory(numberBuffer, 256);
-	wsprintf(numberBuffer, TEXT("编号索引：%d"), stInfo.number);
-	ListViewSetItem(dwCount, columnIndex, numberBuffer);
-	columnIndex++;
-	ListViewSetItem(dwCount, columnIndex, stInfo.content);
+	if (stInfo.size() <= 0)
+	{
+		return;
+	}
+
+	dwCount = ListViewSetItem(dwCount, -1, stInfo[0].c_str());
+
+	for (size_t columnIndex = 0; columnIndex <= stInfo.size(); ++columnIndex)
+	{
+		ListViewSetItem(dwCount, columnIndex, stInfo[columnIndex].c_str());
+	}
 }
 
 

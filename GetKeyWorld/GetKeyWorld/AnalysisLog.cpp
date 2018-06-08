@@ -83,7 +83,6 @@ BOOL AnalysisLogBasic::Clear()
 	}
 
 	uSourceSize = 0;
-	m_LineOp = NULL;
 	return TRUE;
 }
 
@@ -147,7 +146,12 @@ BOOL AnalysisLogBasic::AnalysisStart()
 
 		if (m_LineOp)
 		{
-			m_LineOp->OpLine(buff);
+			OpLinePassData data;
+			data.buffer = buff;
+			data.filePointer = thisLineStartFlag;
+			data.nFileSize = uSourceSize;
+			data.nStartPos = thisLineStartFlag - (char*)lpSourceMemory;
+			m_LineOp->OpLine(data);
 		}
 
 		delete buff;
@@ -187,20 +191,3 @@ BOOL AnalysisLogModule::Clear()
 }
 
 #pragma endregion
-
-
-AnalysisSingleFileModule::~AnalysisSingleFileModule()
-{
-	this->Clear();
-}
-
-AnalysisSingleFileModule::AnalysisSingleFileModule()
-{
-
-}
-
-BOOL AnalysisSingleFileModule::Clear()
-{
-	return AnalysisLogBasic::Clear();
-}
-

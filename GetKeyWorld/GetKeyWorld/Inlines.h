@@ -1,6 +1,22 @@
 #ifndef _INLINES_H
 #define _INLINES_H
 
+#include <stdio.h>
+
+#define SafeSprintf Port_SafeSprintf
+
+inline void Port_SafeSprintf(char* buf, size_t byte_size, const char* info, ...)
+{
+	va_list args;
+
+	va_start(args, info);
+
+	_vsnprintf(buf, byte_size - 1, info, args);
+
+	buf[byte_size - 1] = 0;
+}
+
+
 inline unsigned int GetHashValueCase(const char* name)
 {
 	unsigned int h = 0;

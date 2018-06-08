@@ -83,18 +83,24 @@
   <ItemGroup>
     <ClInclude Include="AnalysisBehaviorLine.h" />
     <ClInclude Include="AnalysisLog.h" />
+    <ClInclude Include="ArrayPod.h" />
     <ClInclude Include="BasicUtil.h" />
+    <ClInclude Include="CharTraits.h" />
+    <ClInclude Include="FastStr.h" />
     <ClInclude Include="GetKeyWorld.h" />
     <ClInclude Include="HandleMenuOption.h" />
     <ClInclude Include="Inlines.h" />
     <ClInclude Include="ListViewRelated.h" />
     <ClInclude Include="MyFile.h" />
+    <ClInclude Include="PodHashMap.h" />
+    <ClInclude Include="PodTraits.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SingleFileErrorShow.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringPod.h" />
     <ClInclude Include="StringTraits.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="util_func.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AnalysisBehaviorLine.cpp" />
@@ -109,6 +115,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="util_func.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GetKeyWorld.rc" />
