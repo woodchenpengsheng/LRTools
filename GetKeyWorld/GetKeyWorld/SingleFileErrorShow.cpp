@@ -3,23 +3,13 @@
 #include "util_func.h"
 #include "Richedit.h"
 
-MyListView* g_pSingleErrorFileLeftView = NULL;
-SingleViewContainer* g_pSingleViewContainer = NULL;
-
-void ReleaseViewRelatedInfo()
+void ReleaseViewRelatedInfo(HWND hWnd)
 {
-	if (NULL != g_pSingleErrorFileLeftView)
+	if (NULL != GetSingleFileContainer(hWnd))
 	{
-		delete g_pSingleErrorFileLeftView;
-		g_pSingleErrorFileLeftView = NULL;
+		delete GetSingleFileContainer(hWnd);
+		RemoveHWNDFromManager(hWnd);
 	}
-
-	if (NULL != g_pSingleViewContainer)
-	{
-		delete g_pSingleViewContainer;
-		g_pSingleViewContainer = NULL;
-	}
-
 }
 
 SingleViewContainer::~SingleViewContainer()
@@ -34,6 +24,12 @@ SingleViewContainer::~SingleViewContainer()
 	{
 		delete m_BehaviorModule;
 		m_BehaviorModule = NULL;
+	}
+
+	if (NULL != m_LeftListView)
+	{
+		delete m_LeftListView;
+		m_LeftListView = NULL;
 	}
 
 	TStringPod<char, ShowKeyInfo*>::iterator iter = m_PodAlreadyInList.Begin();
@@ -90,42 +86,25 @@ char* strViewColumnName[] =
 	NULL,
 };
 
-
-DWORD WINAPI SingleDlgThreadProc(LPVOID lpParam)
-{
-	SingleFileUIThreadInfo* pInfo = (SingleFileUIThreadInfo*)lpParam;
-	if (NULL == pInfo->strBuff)
-	{
-		return 0;
-	}
-
-	HWND openDialog = CreateDialog(NULL, MAKEINTRESOURCE(IDD_SINGLEFILE), pInfo->hParent, (DLGPROC)SingleDlgProc);
-
-	OpenFileList stFileData;
-	stFileData.hWindowHandle = openDialog;
-
-	strPodAllOpenList.Add(pInfo->strBuff, stFileData);
-
-	ShowWindow(openDialog, SW_SHOW);
-
-	delete pInfo->strBuff;
-	return 0;
-}
-
 void InitSingleFileMainDlg(HWND hWnd)
 {
 	HWND hLeftList = GetDlgItem(hWnd, IDC_LEFTLIST);
-	g_pSingleErrorFileLeftView = new MyListView(strViewColumnName, hLeftList);
-	g_pSingleViewContainer = new SingleViewContainer();
+
+	MyListView* pSingleErrorFileLeftView = new MyListView(strViewColumnName, hLeftList);
+
+	SingleViewContainer* pSingleViewContainer = new SingleViewContainer();
+	AddContailer2Manager(hWnd, pSingleViewContainer);
+
+	pSingleViewContainer->m_LeftListView = pSingleErrorFileLeftView;
 
 	//定义表格外观
 	SendMessage(hLeftList, LVM_SETEXTENDEDLISTVIEWSTYLE, \
 		0, LVS_EX_GRIDLINES | LVS_EX_FULLROWSELECT);
 	ShowWindow(hLeftList, SW_SHOW);
-	g_pSingleErrorFileLeftView->ClearResultView();
+	pSingleErrorFileLeftView->ClearResultView();
 
-	g_pSingleViewContainer->hMainDlg = hWnd;
-	g_pSingleViewContainer->hLeftDlg = hLeftList;
+	pSingleViewContainer->hMainDlg = hWnd;
+	pSingleViewContainer->hLeftDlg = hLeftList;
 }
 
 void InitSingleFileRightDlg(HWND hWnd)
@@ -142,7 +121,7 @@ void InitSingleFileRightDlg(HWND hWnd)
 	SendMessage(hRightList, EM_SETCHARFORMAT, 0, (LPARAM)&stFormat);
 	SendMessage(hRightList, EM_EXLIMITTEXT, 0, -1);
 
-	g_pSingleViewContainer->hRightDlg = hRightList;
+	GetSingleFileContainer(hWnd)->hRightDlg = hRightList;
 }
 
 
@@ -173,7 +152,7 @@ INT CALLBACK SingleDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 				Handle_DLG_INIT_INFO(hWnd, (OpenFileList*)lParam);
 				break;
 			case RIGHT_DLG_INIT_INFO:
-				Handle_RIGHT_DLG_INIT_INFO((OpenFileList*)lParam);
+				Handle_RIGHT_DLG_INIT_INFO(hWnd, (OpenFileList*)lParam);
 				break;
 		}
 		break;
@@ -181,7 +160,7 @@ INT CALLBACK SingleDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam
 		InitSingleFileMainDlg(hWnd);
 		break;
 	case WM_CLOSE:
-		ReleaseViewRelatedInfo();
+		ReleaseViewRelatedInfo(hWnd);
 		DestroyWindow(hWnd);
 		break;
 	case WM_COMMAND:
@@ -216,12 +195,12 @@ void Handle_DLG_INIT_INFO(HWND hWnd,OpenFileList* pOpenFile)
 	MyDebugOutPut("%s\n", pOpenFile->strFilePath);
 	MyDebugOutPut("keyName: %s\n", keyName);
 
-	g_pSingleViewContainer->m_AnalysisModule->Init(pOpenFile->strFilePath);
-	g_pSingleViewContainer->m_AnalysisModule->SetWantKey(keyName);
+	GetSingleFileContainer(hWnd)->m_AnalysisModule->Init(pOpenFile->strFilePath);
+	GetSingleFileContainer(hWnd)->m_AnalysisModule->SetWantKey(keyName);
 
 	//开始start分析的时候，单独开启一个线程。然后将更新的消息PUSH到界面上，防止卡死。
-	g_pSingleViewContainer->m_ThreadOpInfo.hThread = CreateThread(NULL, 0, SingleFileAnalysisThreadOp, 
-		NULL, 0, &g_pSingleViewContainer->m_ThreadOpInfo.dwThreadID);
+	GetSingleFileContainer(hWnd)->m_ThreadOpInfo.hThread = CreateThread(NULL, 0, SingleFileAnalysisThreadOp,
+		hWnd, 0, &GetSingleFileContainer(hWnd)->m_ThreadOpInfo.dwThreadID);
 
 	delete pOpenFile->strFilePath;
 	delete pOpenFile;
@@ -243,11 +222,11 @@ void AppendInfoMation(HWND hRichEdit, char* szData, int nLength)
 
 void ShowCertainIndexLog(HWND hWnd, int nIndex)
 {
-	OpenFileList* pCurrentFileList = g_pSingleViewContainer->m_CurrentFileList;
+	OpenFileList* pCurrentFileList = GetSingleFileContainer(hWnd)->m_CurrentFileList;
 
-	TStringPod<char, ShowKeyInfo*>::iterator iter = g_pSingleViewContainer->m_PodAlreadyInList.Find(pCurrentFileList->strFilePath);
+	TStringPod<char, ShowKeyInfo*>::iterator iter = GetSingleFileContainer(hWnd)->m_PodAlreadyInList.Find(pCurrentFileList->strFilePath);
 
-	if (iter == g_pSingleViewContainer->m_PodAlreadyInList.End())
+	if (iter == GetSingleFileContainer(hWnd)->m_PodAlreadyInList.End())
 	{
 		MyDebugOutPut("Handle_RIGHT_DLG_INIT_INFO 没有找到目标\n");
 		MyDebugOutPut(pCurrentFileList->strFilePath);
@@ -273,8 +252,8 @@ void ShowCertainIndexLog(HWND hWnd, int nIndex)
 
 	CHAR* pCurrentFilePointer = pShowCell->fileStartPointer;
 
-	int nSize = g_pSingleViewContainer->m_AnalysisModule->GetSize();
-	CHAR* pFileStartPointer = (CHAR*)g_pSingleViewContainer->m_AnalysisModule->GetStartSourceMemory();
+	int nSize = GetSingleFileContainer(hWnd)->m_AnalysisModule->GetSize();
+	CHAR* pFileStartPointer = (CHAR*)GetSingleFileContainer(hWnd)->m_AnalysisModule->GetStartSourceMemory();
 
 	CHAR* pFileEndPointer = pFileStartPointer + nSize - 1;
 
@@ -288,13 +267,13 @@ void ShowCertainIndexLog(HWND hWnd, int nIndex)
 
 }
 
-void Handle_RIGHT_DLG_INIT_INFO(OpenFileList* pOpenFile)
+void Handle_RIGHT_DLG_INIT_INFO(HWND hWnd, OpenFileList* pOpenFile)
 {
 	HWND hFromWhichWindow = pOpenFile->hWindowHandle;
 	char* strPath = pOpenFile->strFilePath;
 
-	TStringPod<char, ShowKeyInfo*>::iterator iter = g_pSingleViewContainer->m_PodAlreadyInList.Find(strPath);
-	if (iter == g_pSingleViewContainer->m_PodAlreadyInList.End())
+	TStringPod<char, ShowKeyInfo*>::iterator iter = GetSingleFileContainer(hWnd)->m_PodAlreadyInList.Find(strPath);
+	if (iter == GetSingleFileContainer(hWnd)->m_PodAlreadyInList.End())
 	{
 		MyDebugOutPut("Handle_RIGHT_DLG_INIT_INFO 没有找到目标\n");
 		MyDebugOutPut(strPath);
@@ -322,27 +301,27 @@ void Handle_RIGHT_DLG_INIT_INFO(OpenFileList* pOpenFile)
 
 DWORD WINAPI SingleFileAnalysisThreadOp(LPVOID lpParam)
 {
-	g_pSingleViewContainer->m_AnalysisModule->AnalysisStart();
-	TStringPod<char, ShowKeyInfo*>::iterator iter = g_pSingleViewContainer->m_PodAlreadyInList.Begin();
-
+	HWND hWnd = (HWND)lpParam;
+	GetSingleFileContainer(hWnd)->m_AnalysisModule->AnalysisStart();
+	TStringPod<char, ShowKeyInfo*>::iterator iter = GetSingleFileContainer(hWnd)->m_PodAlreadyInList.Begin();
 
 	AddRowInfo stRowInfo;
 	stRowInfo.clear();
 
-	while (iter != g_pSingleViewContainer->m_PodAlreadyInList.End())
+	while (iter != GetSingleFileContainer(hWnd)->m_PodAlreadyInList.End())
 	{
 		ShowKeyInfo* pShowKeyInfo = iter.GetData();
 		char* buff = (char*)iter.GetKey();
 
 		stRowInfo.push_back(util_int_as_string(pShowKeyInfo->nShowTime).c_str());
 		stRowInfo.push_back(buff);
-		g_pSingleErrorFileLeftView->AddLine(stRowInfo);
+		GetSingleFileContainer(hWnd)->m_LeftListView->AddLine(stRowInfo);
 		stRowInfo.clear();
 		iter++;
 	}
 
-	g_pSingleViewContainer->m_ThreadOpInfo.dwThreadID = NULL;
-	g_pSingleViewContainer->m_ThreadOpInfo.hThread = NULL;
+	GetSingleFileContainer(hWnd)->m_ThreadOpInfo.dwThreadID = NULL;
+	GetSingleFileContainer(hWnd)->m_ThreadOpInfo.hThread = NULL;
 	return 0;
 
 }
@@ -357,7 +336,7 @@ LRESULT HandleDoubleClickRightDlg(HWND hWnd, LPNMITEMACTIVATE lpInfo)
 	CHAR* resultBuffer = new CHAR[MAX_PATH];
 	ZeroMemory(resultBuffer, MAX_PATH);
 
-	g_pSingleErrorFileLeftView->GetListViewItem(lpInfo->iItem, 1, resultBuffer, MAX_PATH - 1);
+	GetSingleFileContainer(hWnd)->m_LeftListView->GetListViewItem(lpInfo->iItem, 1, resultBuffer, MAX_PATH - 1);
 
 	if (resultBuffer[0] == '\0')
 	{
@@ -366,7 +345,7 @@ LRESULT HandleDoubleClickRightDlg(HWND hWnd, LPNMITEMACTIVATE lpInfo)
 		return 0;
 	}
 
-	TStringPod<char, OpenFileList>::iterator iter = g_pSingleViewContainer->strPodAllOpenList.Find(resultBuffer);
+	TStringPod<char, OpenFileList>::iterator iter = GetSingleFileContainer(hWnd)->strPodAllOpenList.Find(resultBuffer);
 	//if (iter != strPodAllOpenList.End())
 	//{
 	//	OpenFileList stData = iter.GetData();
@@ -391,7 +370,7 @@ LRESULT HandleDoubleClickRightDlg(HWND hWnd, LPNMITEMACTIVATE lpInfo)
 
 	strPodAllOpenList.Add(resultBuffer, *pStFileData);
 
-	g_pSingleViewContainer->m_CurrentFileList = pStFileData;
+	GetSingleFileContainer(hWnd)->m_CurrentFileList = pStFileData;
 
 	PostMessage(hWnd, WM_MY_MESSAGE, RIGHT_DLG_INIT_INFO, (LPARAM)pStFileData);
 

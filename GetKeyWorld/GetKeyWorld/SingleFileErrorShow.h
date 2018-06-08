@@ -6,6 +6,7 @@
 #include "ArrayPod.h"
 #include "StringPod.h"
 #include "AnalysisLog.h"
+#include "SingleFileManager.h"
 
 class ShowKeyInfoCell
 {
@@ -52,6 +53,7 @@ class AnalysisLogModule;
 class AnalysisBehaviorLine;
 
 #define ShowOutDefaultLength MAX_PATH * 10
+
 class SingleViewContainer
 {
 public:
@@ -66,23 +68,20 @@ public:
 	HWND hRightDlg;
 	HWND hLeftDlg;
 
+	MyListView* m_LeftListView;
 	~SingleViewContainer();
 	SingleViewContainer();
 };
 
 extern MyListView* g_pSingleErrorFileLeftView;
 
-extern SingleViewContainer* g_pSingleViewContainer;
-
 INT CALLBACK SingleDlgProc(HWND, UINT, WPARAM, LPARAM);
-
-DWORD WINAPI SingleDlgThreadProc(LPVOID lpParam);
 
 void Handle_DLG_INIT_INFO(HWND hWnd, OpenFileList* pOpenFile);
 
-void Handle_RIGHT_DLG_INIT_INFO(OpenFileList* pOpenFile);
+void Handle_RIGHT_DLG_INIT_INFO(HWND hWnd, OpenFileList* pOpenFile);
 
-void ReleaseViewRelatedInfo();
+void ReleaseViewRelatedInfo(HWND);
 
 DWORD WINAPI SingleFileAnalysisThreadOp (LPVOID lpParam);
 

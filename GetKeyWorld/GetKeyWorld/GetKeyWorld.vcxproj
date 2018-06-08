@@ -96,6 +96,7 @@
     <ClInclude Include="PodTraits.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SingleFileErrorShow.h" />
+    <ClInclude Include="SingleFileManager.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringPod.h" />
     <ClInclude Include="StringTraits.h" />
@@ -111,6 +112,7 @@
     <ClCompile Include="ListViewRelated.cpp" />
     <ClCompile Include="MyFile.cpp" />
     <ClCompile Include="SingleFileErrorShow.cpp" />
+    <ClCompile Include="SingleFileManager.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

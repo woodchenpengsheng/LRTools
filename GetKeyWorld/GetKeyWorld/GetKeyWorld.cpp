@@ -8,6 +8,7 @@
 #include "commctrl.h"
 #include "Richedit.h"
 #include "ListViewRelated.h"
+#include "SingleFileManager.h"
 
 #define MAX_LOADSTRING 100
 
@@ -150,7 +151,19 @@ INT_PTR CALLBACK DlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_DESTROY:
-		delete g_pMainListView;
+
+		if (NULL != g_pMainListView)
+		{
+			delete g_pMainListView;
+			g_pMainListView = NULL;
+		}
+
+		if (NULL != g_pSingleFileManager)
+		{
+			delete g_pSingleFileManager;
+			g_pSingleFileManager = NULL;
+		}
+
 		PostQuitMessage(0);
 		break;
 	default:
