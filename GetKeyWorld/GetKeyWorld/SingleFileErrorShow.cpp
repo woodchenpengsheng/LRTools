@@ -384,3 +384,28 @@ LRESULT HandleDoubleClickRightDlg(HWND hWnd, LPNMITEMACTIVATE lpInfo)
 	//HandleStartLogOpThreadHandle = CreateThread(NULL, 0, SingleDlgThreadProc, pData, 0, &nthreadID);
 	return 0;
 }
+
+
+
+DWORD WINAPI SingleDlgThreadProc(LPVOID lpParam)
+{
+	SingleFileUIThreadInfo* pInfo = (SingleFileUIThreadInfo*)lpParam;
+	if (NULL == pInfo->strBuff)
+	{
+		return 0;
+	}
+
+
+	HWND openDialog = CreateDialog(NULL, MAKEINTRESOURCE(IDD_SINGLEFILE), pInfo->hParent, (DLGPROC)SingleDlgProc);
+
+
+	pInfo->pStOpenFileList->hWindowHandle = openDialog;
+
+	ShowWindow(openDialog, SW_SHOW);
+
+	PostThreadMessage(pInfo->dwThreadID, WM_MY_MESSAGE, DLG_INIT_INFO, (LPARAM)(pInfo->pStOpenFileList));
+	//PostMessage(openDialog, WM_MY_MESSAGE, DLG_INIT_INFO, (LPARAM)(pInfo->pStOpenFileList));
+
+	delete pInfo;
+	return 0;
+}

@@ -8,6 +8,41 @@
 #include "AnalysisLog.h"
 #include "SingleFileManager.h"
 
+class OpenFileList
+{
+public:
+	HWND hWindowHandle;
+	char* strFilePath;
+
+	OpenFileList()
+	{
+		strFilePath = NULL;
+	}
+
+	OpenFileList(const OpenFileList& src)
+	{
+		hWindowHandle = src.hWindowHandle;
+		strFilePath = NULL;
+	}
+
+	~OpenFileList()
+	{
+		if (NULL != strFilePath)
+		{
+			strFilePath = NULL;
+		}
+	}
+
+};
+
+typedef struct _SingleFileUIThreadInfo
+{
+	char* strBuff;
+	HWND hParent;
+	DWORD dwThreadID;
+	OpenFileList* pStOpenFileList;
+}SingleFileUIThreadInfo;
+
 class ShowKeyInfoCell
 {
 public:
@@ -42,12 +77,6 @@ typedef struct _STSingleFileThreadOp
 	DWORD dwThreadID;
 	HANDLE hThread;
 }STSingleFileThreadOp;
-
-typedef struct _SingleFileUIThreadInfo
-{
-	char* strBuff;
-	HWND hParent;
-}SingleFileUIThreadInfo;
 
 class AnalysisLogModule;
 class AnalysisBehaviorLine;
@@ -95,5 +124,7 @@ LRESULT HandleDoubleClickRightDlg(HWND hWnd, LPNMITEMACTIVATE lpInfo);
 void AppendInfoMation(HWND hRichEdit, char* szData);
 
 void ShowCertainIndexLog(HWND hWnd, int index = -1);
+
+DWORD WINAPI SingleDlgThreadProc(LPVOID lpParam);
 
 #endif

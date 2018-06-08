@@ -6,38 +6,13 @@
 #include "Commctrl.h"
 #include "StringPod.h"
 
+class OpenFileList;
+
 typedef struct _StartLogOp
 {
 	HWND hWnd;
 	int keyNumber;
 }StartLogOp;
-
-class OpenFileList
-{
-public:
-	HWND hWindowHandle;
-	char* strFilePath;
-
-	OpenFileList()
-	{
-		strFilePath = NULL;
-	}
-
-	OpenFileList(const OpenFileList& src)
-	{
-		hWindowHandle = src.hWindowHandle;
-		strFilePath = NULL;
-	}
-
-	~OpenFileList()
-	{
-		if (NULL != strFilePath)
-		{
-			strFilePath = NULL;
-		}
-	}
-
-};
 
 DWORD WINAPI HandleStartLogOpThreadProc(LPVOID lpParam);
 

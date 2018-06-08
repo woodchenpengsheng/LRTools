@@ -284,9 +284,9 @@ LRESULT HandleDoubleClickListView(HWND hWnd,LPNMITEMACTIVATE lpInfo)
 	//SingleFileUIThreadInfo* pData = new SingleFileUIThreadInfo;
 	//pData->hParent = hWnd;
 	//pData->strBuff = resultBuffer;
+	//pData->pStOpenFileList = pStFileData;
 
 	////创建一个单独的dialog，将所有的error进行标红
-	//DWORD nthreadID;
-	//HandleStartLogOpThreadHandle = CreateThread(NULL, 0, SingleDlgThreadProc, pData, 0, &nthreadID);
+	//HandleStartLogOpThreadHandle = CreateThread(NULL, 0, SingleDlgThreadProc, pData, 0, &pData->dwThreadID);
 	return 0;
 }
